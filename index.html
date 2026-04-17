@@ -1,25 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>NovaTech AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
+      background: #f4f4f4;
     }
 
     /* Navbar */
-    .navbar {
-      background: black;
-      padding: 15px;
+    nav {
+      background: #111;
+      color: white;
       display: flex;
       justify-content: space-between;
+      padding: 15px 20px;
+      position: sticky;
+      top: 0;
     }
 
-    .navbar a {
+    nav a {
       color: white;
       margin-left: 15px;
       text-decoration: none;
@@ -27,84 +31,50 @@
 
     /* Hero */
     .hero {
+      background: linear-gradient(to right, #1e90ff, #00bfff);
+      color: white;
       text-align: center;
-      padding: 60px 20px;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      padding: 80px 20px;
     }
 
-    /* Videos */
-    .videos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-      padding: 40px;
+    .hero h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
     }
 
-    iframe {
-      width: 300px;
-      height: 180px;
-      border-radius: 10px;
-    }
-
-    /* Chat button */
-    .chat-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #00c6ff;
-      color: black;
-      padding: 15px;
-      border-radius: 50%;
+    .hero button {
+      padding: 10px 20px;
+      border: none;
+      background: white;
+      color: #1e90ff;
+      border-radius: 5px;
       cursor: pointer;
     }
 
-    /* Chat box */
-    .chat-box {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 300px;
-      background: white;
-      color: black;
-      border-radius: 10px;
-      display: none;
-      flex-direction: column;
-    }
-
-    .chat-header {
-      background: #0072ff;
-      color: white;
-      padding: 10px;
-    }
-
-    .chat-messages {
-      height: 200px;
-      overflow-y: auto;
-      padding: 10px;
-    }
-
-    .chat-input {
+    /* Cards */
+    .container {
       display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 40px;
+      gap: 20px;
     }
 
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: none;
+    .card {
+      background: white;
+      padding: 20px;
+      width: 250px;
+      text-align: center;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    .chat-input button {
-      padding: 10px;
-      border: none;
-      background: #0072ff;
-      color: white;
-    }
-
-    .footer {
+    /* Footer */
+    footer {
       text-align: center;
       padding: 20px;
-      background: black;
+      background: #111;
+      color: white;
     }
   </style>
 </head>
@@ -112,81 +82,75 @@
 <body>
 
   <!-- Navbar -->
-  <div class="navbar">
-    <div><b>NovaTech AI</b></div>
+  <nav>
+    <div>NovaTech AI</div>
     <div>
       <a href="#">Home</a>
-      <a href="#">AI Videos</a>
+      <a href="#">Services</a>
+      <a href="#">Contact</a>
     </div>
-  </div>
+  </nav>
 
-  <!-- Hero -->
-  <div class="hero">
-    <h1>Welcome to NovaTech AI</h1>
-    <p>Explore AI and chat with our assistant</p>
-  </div>
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Welcome to NovaTech AI 🚀</h1>
+    <p>We build modern websites and AI tools</p>
+    <button>Get Started</button>
+  </section>
 
-  <!-- Videos -->
-  <div class="videos">
-    <iframe src="https://www.youtube.com/embed/2ePf9rue1Ao" allowfullscreen></iframe>
-    <iframe src="https://www.youtube.com/embed/JMUxmLyrhSk" allowfullscreen></iframe>
-    <iframe src="https://www.youtube.com/embed/ad79nYk2keg" allowfullscreen></iframe>
-  </div>
+  <!-- Services -->
+  <div class="container">
+    <div class="card">
+      <h3>Web Design</h3>
+      <p>Modern and responsive design</p>
+    </div>
 
-  <!-- Chat Button -->
-  <div class="chat-btn" onclick="toggleChat()">💬</div>
+    <div class="card">
+      <h3>Development</h3>
+      <p>Fast and secure websites</p>
+    </div>
 
-  <!-- Chat Box -->
-  <div class="chat-box" id="chatBox">
-    <div class="chat-header">NovaTech AI</div>
-    <div class="chat-messages" id="messages"></div>
-
-    <div class="chat-input">
-      <input id="userInput" placeholder="Ask something...">
-      <button onclick="sendMessage()">Send</button>
+    <div class="card">
+      <h3>AI Chatbots</h3>
+      <p>Smart assistants for your business</p>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="footer">
-    <p>© 2026 NovaTech AI</p>
-  </div>
+  <footer>
+    © 2026 NovaTech AI
+  </footer>
 
+  <!-- ✅ Chatbase AI Chatbot -->
   <script>
-    function toggleChat() {
-      let box = document.getElementById("chatBox");
-      box.style.display = box.style.display === "flex" ? "none" : "flex";
+  (function(){
+    if(!window.chatbase || window.chatbase("getState") !== "initialized"){
+      window.chatbase = (...arguments)=>{
+        if(!window.chatbase.q){window.chatbase.q=[]}
+        window.chatbase.q.push(arguments)
+      };
+      window.chatbase = new Proxy(window.chatbase,{
+        get(target,prop){
+          if(prop === "q"){return target.q}
+          return (...args)=>target(prop,...args)
+        }
+      });
     }
 
-    function sendMessage() {
-      let input = document.getElementById("userInput");
-      let messages = document.getElementById("messages");
+    const onLoad = function(){
+      const script = document.createElement("script");
+      script.src = "https://www.chatbase.co/embed.min.js";
+      script.id = "fQ7kYyLKAY6GqqJTbjVSA";
+      script.domain = "www.chatbase.co";
+      document.body.appendChild(script);
+    };
 
-      let userText = input.value;
-      if (userText === "") return;
-
-      messages.innerHTML += "<p><b>You:</b> " + userText + "</p>";
-
-      let reply = getAIResponse(userText);
-      messages.innerHTML += "<p><b>AI:</b> " + reply + "</p>";
-
-      input.value = "";
-      messages.scrollTop = messages.scrollHeight;
+    if(document.readyState === "complete"){
+      onLoad();
+    } else {
+      window.addEventListener("load", onLoad);
     }
-
-    function getAIResponse(input) {
-      input = input.toLowerCase();
-
-      if (input.includes("hello")) return "Hello! 👋 How can I help you?";
-      if (input.includes("ai")) return "AI is the future of technology.";
-      if (input.includes("website")) return "We build modern websites.";
-      if (input.includes("price")) return "Contact us for pricing.";
-      if (input.includes("name")) return "I am NovaTech AI 🤖";
-      if (input.includes("who are you")) return "I am your AI assistant.";
-      if (input.includes("help")) return "Ask me about AI or websites.";
-
-      return "I'm still learning, try asking something else!";
-    }
+  })();
   </script>
 
 </body>
