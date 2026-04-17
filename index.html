@@ -6,11 +6,12 @@
   <style>
     body {
       margin: 0;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #0f172a;
       color: white;
     }
 
+    /* Navbar */
     .navbar {
       background: black;
       padding: 15px;
@@ -18,9 +19,32 @@
       justify-content: space-between;
     }
 
+    .navbar a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+    }
+
+    /* Hero */
     .hero {
       text-align: center;
-      padding: 50px;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+    }
+
+    /* Videos */
+    .videos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px;
+    }
+
+    iframe {
+      width: 300px;
+      height: 180px;
+      border-radius: 10px;
     }
 
     /* Chat button */
@@ -76,18 +100,37 @@
       background: #0072ff;
       color: white;
     }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      background: black;
+    }
   </style>
 </head>
 
 <body>
 
+  <!-- Navbar -->
   <div class="navbar">
     <div><b>NovaTech AI</b></div>
+    <div>
+      <a href="#">Home</a>
+      <a href="#">AI Videos</a>
+    </div>
   </div>
 
+  <!-- Hero -->
   <div class="hero">
     <h1>Welcome to NovaTech AI</h1>
-    <p>Chat with our AI assistant</p>
+    <p>Explore AI and chat with our assistant</p>
+  </div>
+
+  <!-- Videos -->
+  <div class="videos">
+    <iframe src="https://www.youtube.com/embed/2ePf9rue1Ao" allowfullscreen></iframe>
+    <iframe src="https://www.youtube.com/embed/JMUxmLyrhSk" allowfullscreen></iframe>
+    <iframe src="https://www.youtube.com/embed/ad79nYk2keg" allowfullscreen></iframe>
   </div>
 
   <!-- Chat Button -->
@@ -95,13 +138,18 @@
 
   <!-- Chat Box -->
   <div class="chat-box" id="chatBox">
-    <div class="chat-header">AI Chatbot</div>
+    <div class="chat-header">NovaTech AI</div>
     <div class="chat-messages" id="messages"></div>
 
     <div class="chat-input">
-      <input id="userInput" placeholder="Type a message...">
+      <input id="userInput" placeholder="Ask something...">
       <button onclick="sendMessage()">Send</button>
     </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>© 2026 NovaTech AI</p>
   </div>
 
   <script>
@@ -129,12 +177,15 @@
     function getAIResponse(input) {
       input = input.toLowerCase();
 
-      if (input.includes("hello")) return "Hello! How can I help you?";
-      if (input.includes("ai")) return "AI is the future of technology!";
+      if (input.includes("hello")) return "Hello! 👋 How can I help you?";
+      if (input.includes("ai")) return "AI is the future of technology.";
       if (input.includes("website")) return "We build modern websites.";
       if (input.includes("price")) return "Contact us for pricing.";
-      
-      return "I'm still learning. Ask me something else!";
+      if (input.includes("name")) return "I am NovaTech AI 🤖";
+      if (input.includes("who are you")) return "I am your AI assistant.";
+      if (input.includes("help")) return "Ask me about AI or websites.";
+
+      return "I'm still learning, try asking something else!";
     }
   </script>
 
