@@ -12,10 +12,11 @@
       background: #0f7a2a;
       border: 6px solid #3b2f2f;
       margin-top: 20px;
+      touch-action: none;
     }
   </style>
 </head>
-<body><h2>🎱 8 Ball Pool (Cue + Power)</h2>
+<body><h2>🎱 8 Ball Pool (Mobile + Cue + Power)</h2>
 <p id="turn">Player 1 Turn</p><canvas id="game" width="700" height="350"></canvas>
 
 <script>
@@ -59,38 +60,59 @@ let pockets = [
   {x:0,y:350},{x:350,y:350},{x:700,y:350}
 ];
 
-// Input
-canvas.addEventListener("mousedown", (e)=>{
+// -------- INPUT (MOUSE + TOUCH) --------
+function getPos(e){
+  if(e.touches){
+    return {
+      x: e.touches[0].clientX - canvas.getBoundingClientRect().left,
+      y: e.touches[0].clientY - canvas.getBoundingClientRect().top
+    };
+  } else {
+    return { x: e.offsetX, y: e.offsetY };
+  }
+}
+
+canvas.addEventListener("mousedown", startAim);
+canvas.addEventListener("touchstart", startAim);
+
+function startAim(e){
   if(gameOver) return;
   aiming = true;
-});
+}
 
-canvas.addEventListener("mousemove", (e)=>{
+canvas.addEventListener("mousemove", aimMove);
+canvas.addEventListener("touchmove", aimMove);
+
+function aimMove(e){
   if(!aiming) return;
 
+  let pos = getPos(e);
   let cue = balls.find(b=>b.type==="cue");
 
-  let dx = cue.x - e.offsetX;
-  let dy = cue.y - e.offsetY;
+  let dx = cue.x - pos.x;
+  let dy = cue.y - pos.y;
 
   angle = Math.atan2(dy, dx);
   power = Math.min(Math.sqrt(dx*dx + dy*dy), 120);
-});
+}
 
-canvas.addEventListener("mouseup", ()=>{
+canvas.addEventListener("mouseup", shoot);
+canvas.addEventListener("touchend", shoot);
+
+function shoot(){
   if(gameOver) return;
 
   aiming = false;
 
   let cue = balls.find(b=>b.type==="cue");
 
-  cue.vx = Math.cos(angle) * power * 0.2;
-  cue.vy = Math.sin(angle) * power * 0.2;
+  cue.vx = Math.cos(angle) * power * 0.25;
+  cue.vy = Math.sin(angle) * power * 0.25;
 
   power = 0;
-});
+}
 
-// Draw
+// -------- DRAW --------
 function drawBall(b){
   ctx.beginPath();
   ctx.arc(b.x, b.y, radius, 0, Math.PI*2);
@@ -107,7 +129,6 @@ function drawPockets(){
   });
 }
 
-// Cue stick
 function drawCue(){
   if(aiming){
     let cue = balls.find(b=>b.type==="cue");
@@ -124,7 +145,7 @@ function drawCue(){
   }
 }
 
-// Collision
+// -------- COLLISION --------
 function collide(b1,b2){
   let dx = b2.x - b1.x;
   let dy = b2.y - b1.y;
@@ -143,7 +164,7 @@ function collide(b1,b2){
   }
 }
 
-// Update
+// -------- UPDATE --------
 function update(){
   let moving = false;
 
@@ -199,7 +220,7 @@ function update(){
   }
 }
 
-// Loop
+// -------- LOOP --------
 function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPockets();
