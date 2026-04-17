@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html><html>
 <head>
   <title>8 Ball Pool</title>
   <style>
@@ -16,12 +15,8 @@
     }
   </style>
 </head>
-<body>
-
-<h2>🎱 8 Ball Pool (2 Players)</h2>
-<p id="turn">Player 1 Turn</p>
-
-<canvas id="game" width="700" height="350"></canvas>
+<body><h2>🎱 8 Ball Pool (Cue + Power)</h2>
+<p id="turn">Player 1 Turn</p><canvas id="game" width="700" height="350"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
@@ -34,12 +29,13 @@ let playerTurn = 1;
 let gameOver = false;
 
 let aiming = false;
-let startX, startY;
+let power = 0;
+let angle = 0;
 
-// Create cue ball
+// Cue ball
 balls.push({x:150, y:175, vx:0, vy:0, color:"white", type:"cue"});
 
-// Create rack
+// Rack
 let colors = ["yellow","blue","red","purple","orange","green","brown"];
 let xStart = 500;
 let yStart = 175;
@@ -63,24 +59,38 @@ let pockets = [
   {x:0,y:350},{x:350,y:350},{x:700,y:350}
 ];
 
+// Input
 canvas.addEventListener("mousedown", (e)=>{
   if(gameOver) return;
   aiming = true;
-  startX = e.offsetX;
-  startY = e.offsetY;
 });
 
-canvas.addEventListener("mouseup", (e)=>{
+canvas.addEventListener("mousemove", (e)=>{
+  if(!aiming) return;
+
+  let cue = balls.find(b=>b.type==="cue");
+
+  let dx = cue.x - e.offsetX;
+  let dy = cue.y - e.offsetY;
+
+  angle = Math.atan2(dy, dx);
+  power = Math.min(Math.sqrt(dx*dx + dy*dy), 120);
+});
+
+canvas.addEventListener("mouseup", ()=>{
+  if(gameOver) return;
+
   aiming = false;
 
   let cue = balls.find(b=>b.type==="cue");
-  let dx = startX - e.offsetX;
-  let dy = startY - e.offsetY;
 
-  cue.vx = dx * 0.08;
-  cue.vy = dy * 0.08;
+  cue.vx = Math.cos(angle) * power * 0.2;
+  cue.vy = Math.sin(angle) * power * 0.2;
+
+  power = 0;
 });
 
+// Draw
 function drawBall(b){
   ctx.beginPath();
   ctx.arc(b.x, b.y, radius, 0, Math.PI*2);
@@ -97,6 +107,24 @@ function drawPockets(){
   });
 }
 
+// Cue stick
+function drawCue(){
+  if(aiming){
+    let cue = balls.find(b=>b.type==="cue");
+
+    let cueX = cue.x + Math.cos(angle) * (power + 25);
+    let cueY = cue.y + Math.sin(angle) * (power + 25);
+
+    ctx.beginPath();
+    ctx.moveTo(cueX, cueY);
+    ctx.lineTo(cue.x, cue.y);
+    ctx.strokeStyle = "#deb887";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+  }
+}
+
+// Collision
 function collide(b1,b2){
   let dx = b2.x - b1.x;
   let dy = b2.y - b1.y;
@@ -115,6 +143,7 @@ function collide(b1,b2){
   }
 }
 
+// Update
 function update(){
   let moving = false;
 
@@ -129,7 +158,6 @@ function update(){
       moving = true;
     }
 
-    // walls
     if(b.x<radius || b.x>canvas.width-radius) b.vx*=-1;
     if(b.y<radius || b.y>canvas.height-radius) b.vy*=-1;
   });
@@ -163,7 +191,7 @@ function update(){
     return true;
   });
 
-  // switch turn when stopped
+  // switch turn
   if(!moving && !aiming && !gameOver){
     playerTurn = playerTurn === 1 ? 2 : 1;
     document.getElementById("turn").innerText =
@@ -171,28 +199,16 @@ function update(){
   }
 }
 
-function drawAim(){
-  if(aiming){
-    let cue = balls.find(b=>b.type==="cue");
-    ctx.beginPath();
-    ctx.moveTo(cue.x, cue.y);
-    ctx.lineTo(startX, startY);
-    ctx.strokeStyle="white";
-    ctx.stroke();
-  }
-}
-
+// Loop
 function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPockets();
   balls.forEach(drawBall);
-  drawAim();
+  drawCue();
   update();
   requestAnimationFrame(loop);
 }
 
 loop();
-</script>
-
-</body>
+</script></body>
 </html>
