@@ -1,37 +1,113 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>4444</title>
+  <title>4444 Company</title>
   <style>
     body {
       margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      background: #f4f4f4;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #111;
       color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .card {
-      background: rgba(0, 0, 0, 0.6);
-      padding: 40px;
-      border-radius: 15px;
+    .navbar h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .navbar a {
+      color: white;
+      margin-left: 15px;
+      text-decoration: none;
+    }
+
+    /* Hero section */
+    .hero {
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      color: white;
       text-align: center;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      padding: 80px 20px;
     }
 
-    h1 {
+    .hero h2 {
+      font-size: 40px;
       margin-bottom: 10px;
     }
 
-    p {
-      margin-bottom: 20px;
+    .hero button {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      background: white;
+      color: black;
+      cursor: pointer;
     }
 
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #00
+    /* Services */
+    .services {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 40px;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      width: 250px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <div class="navbar">
+    <h1>4444</h1>
+    <div>
+      <a href="#">Home</a>
+      <a href="#">Services</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h2>Welcome to 4444 Company</h2>
+    <p>We build modern websites</p>
+    <button onclick="alert('Contact us!')">Get Started</button>
+  </div>
+
+  <!-- Services -->
+  <div class="services">
+    <div class="card">
+      <h3>Web Design</h3>
+      <p>Modern and responsive design</p>
+    </div>
+
+    <div class="card">
+      <h3>Development</h3>
+      <p>Fast and secure websites</p>
+    </div>
+
+    <div class="card">
+      <h3>Support</h3>
+      <p>24/7 customer help</p>
+    </div>
+  </div>
+
+</body>
+</html>
