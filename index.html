@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>4444 Company</title>
+  <title>NovaTech</title>
+
   <style>
     body {
       margin: 0;
@@ -11,17 +12,11 @@
 
     /* Navbar */
     .navbar {
-      background: #111;
+      background: black;
       color: white;
       padding: 15px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-    }
-
-    .navbar h1 {
-      margin: 0;
-      font-size: 20px;
     }
 
     .navbar a {
@@ -30,25 +25,24 @@
       text-decoration: none;
     }
 
-    /* Hero section */
+    /* Hero Section */
     .hero {
-      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      background: linear-gradient(to right, #007BFF, #00C6FF);
       color: white;
       text-align: center;
-      padding: 80px 20px;
+      padding: 60px 20px;
     }
 
-    .hero h2 {
-      font-size: 40px;
+    .hero h1 {
       margin-bottom: 10px;
     }
 
     .hero button {
-      padding: 12px 25px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 5px;
       background: white;
-      color: black;
+      color: #007BFF;
+      border-radius: 5px;
       cursor: pointer;
     }
 
@@ -57,17 +51,31 @@
       display: flex;
       justify-content: center;
       gap: 20px;
-      padding: 40px;
+      margin: 40px;
       flex-wrap: wrap;
     }
 
     .card {
       background: white;
       padding: 20px;
-      width: 250px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 200px;
       text-align: center;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      background: black;
+      color: white;
+      margin-top: 40px;
     }
   </style>
 </head>
@@ -76,7 +84,7 @@
 
   <!-- Navbar -->
   <div class="navbar">
-    <h1>4444</h1>
+    <div><b>NovaTech</b></div>
     <div>
       <a href="#">Home</a>
       <a href="#">Services</a>
@@ -84,18 +92,18 @@
     </div>
   </div>
 
-  <!-- Hero -->
+  <!-- Hero Section -->
   <div class="hero">
-    <h2>Welcome to 4444 Company</h2>
-    <p>We build modern websites</p>
-    <button onclick="alert('Contact us!')">Get Started</button>
+    <h1>Welcome to NovaTech</h1>
+    <p>We create modern, fast, and beautiful websites</p>
+    <button>Get Started</button>
   </div>
 
   <!-- Services -->
   <div class="services">
     <div class="card">
       <h3>Web Design</h3>
-      <p>Modern and responsive design</p>
+      <p>Clean and modern UI design</p>
     </div>
 
     <div class="card">
@@ -107,6 +115,11 @@
       <h3>Support</h3>
       <p>24/7 customer help</p>
     </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>© 2026 NovaTech. All rights reserved.</p>
   </div>
 
 </body>
