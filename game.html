@@ -1,1 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Pool Game</title>
 
+  <style>
+    body {
+      text-align: center;
+      background: #0f172a;
+      color: white;
+      font-family: Arial;
+    }
+
+    canvas {
+      background: green;
+      margin-top: 20px;
+      border: 5px solid #222;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🎱 Mini Pool Game</h1>
+<p>Click anywhere to hit the ball</p>
+
+<canvas id="game" width="600" height="300"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let ball = {
+  x: 100,
+  y: 150,
+  dx: 0,
+  dy: 0,
+  radius: 10
+};
+
+canvas.addEventListener("click", function(e) {
+  let rect = canvas.getBoundingClientRect();
+  let mouseX = e.clientX - rect.left;
+  let mouseY = e.clientY - rect.top;
+
+  ball.dx = (mouseX - ball.x) * 0.05;
+  ball.dy = (mouseY - ball.y) * 0.05;
+});
+
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "white";
+  ctx.fill();
+}
+
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  // friction
+  ball.dx *= 0.98;
+  ball.dy *= 0.98;
+
+  // bounce walls
+  if (ball.x < 0 || ball.x > canvas.width) ball.dx *= -1;
+  if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
+
+  drawBall();
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
