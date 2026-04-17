@@ -5,22 +5,21 @@
   <style>
     body {
       text-align: center;
-      background: #0f172a;
+      background: #0b1a2a;
       color: white;
+      font-family: Arial;
     }
-
     canvas {
       background: green;
       margin-top: 20px;
-      border: 5px solid #222;
+      border: 5px solid #3b2f2f;
     }
   </style>
 </head>
-
 <body>
 
-<h1>🎱 Mini Pool Game</h1>
-<p>Click anywhere to hit the ball</p>
+<h2>🎱 Mini Pool Game (Drag to Shoot)</h2>
+<p>Drag mouse/finger to aim and release</p>
 
 <canvas id="game" width="600" height="300"></canvas>
 
@@ -29,47 +28,107 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 let ball = {
-  x: 100,
+  x: 150,
   y: 150,
-  dx: 0,
-  dy: 0,
-  radius: 10
+  vx: 0,
+  vy: 0,
+  radius: 8
 };
 
-canvas.addEventListener("click", function(e) {
-  let rect = canvas.getBoundingClientRect();
-  let mouseX = e.clientX - rect.left;
-  let mouseY = e.clientY - rect.top;
+let pockets = [
+  {x:0,y:0}, {x:300,y:0}, {x:600,y:0},
+  {x:0,y:300}, {x:300,y:300}, {x:600,y:300}
+];
 
-  ball.dx = (mouseX - ball.x) * 0.05;
-  ball.dy = (mouseY - ball.y) * 0.05;
+let aiming = false;
+let startX, startY;
+
+canvas.addEventListener("mousedown", (e) => {
+  aiming = true;
+  startX = e.offsetX;
+  startY = e.offsetY;
+});
+
+canvas.addEventListener("mouseup", (e) => {
+  aiming = false;
+  let dx = startX - e.offsetX;
+  let dy = startY - e.offsetY;
+
+  ball.vx = dx * 0.1;
+  ball.vy = dy * 0.1;
 });
 
 function drawBall() {
   ctx.beginPath();
-  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
   ctx.fillStyle = "white";
   ctx.fill();
 }
 
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ball.x += ball.dx;
-  ball.y += ball.dy;
-
-  ball.dx *= 0.98;
-  ball.dy *= 0.98;
-
-  if (ball.x < 0 || ball.x > canvas.width) ball.dx *= -1;
-  if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
-
-  drawBall();
-
-  requestAnimationFrame(update);
+function drawPockets() {
+  ctx.fillStyle = "black";
+  pockets.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 12, 0, Math.PI*2);
+    ctx.fill();
+  });
 }
 
-update();
+function update() {
+  ball.x += ball.vx;
+  ball.y += ball.vy;
+
+  // friction
+  ball.vx *= 0.98;
+  ball.vy *= 0.98;
+
+  // wall collision
+  if(ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
+    ball.vx *= -1;
+  }
+  if(ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
+    ball.vy *= -1;
+  }
+
+  // pocket detection
+  pockets.forEach(p => {
+    let dx = ball.x - p.x;
+    let dy = ball.y - p.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+
+    if(dist < 12) {
+      // reset ball
+      ball.x = 150;
+      ball.y = 150;
+      ball.vx = 0;
+      ball.vy = 0;
+    }
+  });
+}
+
+function drawAimLine() {
+  if(aiming) {
+    ctx.beginPath();
+    ctx.moveTo(ball.x, ball.y);
+    ctx.lineTo(startX, startY);
+    ctx.strokeStyle = "white";
+    ctx.stroke();
+  }
+}
+
+function gameLoop() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawPockets();
+  drawBall();
+  drawAimLine();
+
+  update();
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
 </script>
 
 </body>
