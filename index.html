@@ -1,157 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>NovaTech AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>Mini Pool Game</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-    }
-
-    /* Navbar */
-    nav {
-      background: #111;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      padding: 15px 20px;
-      position: sticky;
-      top: 0;
-    }
-
-    nav a {
-      color: white;
-      margin-left: 15px;
-      text-decoration: none;
-    }
-
-    /* Hero */
-    .hero {
-      background: linear-gradient(to right, #1e90ff, #00bfff);
-      color: white;
       text-align: center;
-      padding: 80px 20px;
-    }
-
-    .hero h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-
-    .hero button {
-      padding: 10px 20px;
-      border: none;
-      background: white;
-      color: #1e90ff;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* Cards */
-    .container {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 40px;
-      gap: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      width: 250px;
-      text-align: center;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 20px;
-      background: #111;
+      background: #0f172a;
       color: white;
+    }
+
+    canvas {
+      background: green;
+      margin-top: 20px;
+      border: 5px solid #222;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- Navbar -->
-  <nav>
-    <div>NovaTech AI</div>
-    <div>
-      <a href="#">Home</a>
-      <a href="#">Services</a>
-      <a href="#">Contact</a>
-    </div>
-  </nav>
+<h1>🎱 Mini Pool Game</h1>
+<p>Click anywhere to hit the ball</p>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <h1>Welcome to NovaTech AI 🚀</h1>
-    <p>We build modern websites and AI tools</p>
-    <button>Get Started</button>
-  </section>
+<canvas id="game" width="600" height="300"></canvas>
 
-  <!-- Services -->
-  <div class="container">
-    <div class="card">
-      <h3>Web Design</h3>
-      <p>Modern and responsive design</p>
-    </div>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-    <div class="card">
-      <h3>Development</h3>
-      <p>Fast and secure websites</p>
-    </div>
+let ball = {
+  x: 100,
+  y: 150,
+  dx: 0,
+  dy: 0,
+  radius: 10
+};
 
-    <div class="card">
-      <h3>AI Chatbots</h3>
-      <p>Smart assistants for your business</p>
-    </div>
-  </div>
+canvas.addEventListener("click", function(e) {
+  let rect = canvas.getBoundingClientRect();
+  let mouseX = e.clientX - rect.left;
+  let mouseY = e.clientY - rect.top;
 
-  <!-- Footer -->
-  <footer>
-    © 2026 NovaTech AI
-  </footer>
+  ball.dx = (mouseX - ball.x) * 0.05;
+  ball.dy = (mouseY - ball.y) * 0.05;
+});
 
-  <!-- ✅ Chatbase AI Chatbot -->
-  <script>
-  (function(){
-    if(!window.chatbase || window.chatbase("getState") !== "initialized"){
-      window.chatbase = (...arguments)=>{
-        if(!window.chatbase.q){window.chatbase.q=[]}
-        window.chatbase.q.push(arguments)
-      };
-      window.chatbase = new Proxy(window.chatbase,{
-        get(target,prop){
-          if(prop === "q"){return target.q}
-          return (...args)=>target(prop,...args)
-        }
-      });
-    }
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "white";
+  ctx.fill();
+}
 
-    const onLoad = function(){
-      const script = document.createElement("script");
-      script.src = "https://www.chatbase.co/embed.min.js";
-      script.id = "fQ7kYyLKAY6GqqJTbjVSA";
-      script.domain = "www.chatbase.co";
-      document.body.appendChild(script);
-    };
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if(document.readyState === "complete"){
-      onLoad();
-    } else {
-      window.addEventListener("load", onLoad);
-    }
-  })();
-  </script>
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+
+  ball.dx *= 0.98;
+  ball.dy *= 0.98;
+
+  if (ball.x < 0 || ball.x > canvas.width) ball.dx *= -1;
+  if (ball.y < 0 || ball.y > canvas.height) ball.dy *= -1;
+
+  drawBall();
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
 
 </body>
 </html>
