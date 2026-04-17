@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Mini Pool Game</title>
+  <title>8 Ball Pool</title>
   <style>
     body {
       text-align: center;
@@ -10,125 +10,188 @@
       font-family: Arial;
     }
     canvas {
-      background: green;
+      background: #0f7a2a;
+      border: 6px solid #3b2f2f;
       margin-top: 20px;
-      border: 5px solid #3b2f2f;
     }
   </style>
 </head>
 <body>
 
-<h2>🎱 Mini Pool Game (Drag to Shoot)</h2>
-<p>Drag mouse/finger to aim and release</p>
+<h2>🎱 8 Ball Pool (2 Players)</h2>
+<p id="turn">Player 1 Turn</p>
 
-<canvas id="game" width="600" height="300"></canvas>
+<canvas id="game" width="700" height="350"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let ball = {
-  x: 150,
-  y: 150,
-  vx: 0,
-  vy: 0,
-  radius: 8
-};
+let balls = [];
+let radius = 8;
 
-let pockets = [
-  {x:0,y:0}, {x:300,y:0}, {x:600,y:0},
-  {x:0,y:300}, {x:300,y:300}, {x:600,y:300}
-];
+let playerTurn = 1;
+let gameOver = false;
 
 let aiming = false;
 let startX, startY;
 
-canvas.addEventListener("mousedown", (e) => {
+// Create cue ball
+balls.push({x:150, y:175, vx:0, vy:0, color:"white", type:"cue"});
+
+// Create rack
+let colors = ["yellow","blue","red","purple","orange","green","brown"];
+let xStart = 500;
+let yStart = 175;
+let index = 0;
+
+for(let row=0; row<5; row++){
+  for(let col=0; col<=row; col++){
+    balls.push({
+      x: xStart + row*18,
+      y: yStart - row*9 + col*18,
+      vx:0, vy:0,
+      color: (row===2 && col===1) ? "black" : colors[index++ % colors.length],
+      type: (index % 2 === 0) ? "solid" : "stripe"
+    });
+  }
+}
+
+// pockets
+let pockets = [
+  {x:0,y:0},{x:350,y:0},{x:700,y:0},
+  {x:0,y:350},{x:350,y:350},{x:700,y:350}
+];
+
+canvas.addEventListener("mousedown", (e)=>{
+  if(gameOver) return;
   aiming = true;
   startX = e.offsetX;
   startY = e.offsetY;
 });
 
-canvas.addEventListener("mouseup", (e) => {
+canvas.addEventListener("mouseup", (e)=>{
   aiming = false;
+
+  let cue = balls.find(b=>b.type==="cue");
   let dx = startX - e.offsetX;
   let dy = startY - e.offsetY;
 
-  ball.vx = dx * 0.1;
-  ball.vy = dy * 0.1;
+  cue.vx = dx * 0.08;
+  cue.vy = dy * 0.08;
 });
 
-function drawBall() {
+function drawBall(b){
   ctx.beginPath();
-  ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
-  ctx.fillStyle = "white";
+  ctx.arc(b.x, b.y, radius, 0, Math.PI*2);
+  ctx.fillStyle = b.color;
   ctx.fill();
 }
 
-function drawPockets() {
-  ctx.fillStyle = "black";
-  pockets.forEach(p => {
+function drawPockets(){
+  ctx.fillStyle="black";
+  pockets.forEach(p=>{
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 12, 0, Math.PI*2);
+    ctx.arc(p.x,p.y,14,0,Math.PI*2);
     ctx.fill();
   });
 }
 
-function update() {
-  ball.x += ball.vx;
-  ball.y += ball.vy;
+function collide(b1,b2){
+  let dx = b2.x - b1.x;
+  let dy = b2.y - b1.y;
+  let dist = Math.sqrt(dx*dx+dy*dy);
 
-  // friction
-  ball.vx *= 0.98;
-  ball.vy *= 0.98;
+  if(dist < radius*2){
+    let angle = Math.atan2(dy,dx);
+    let speed1 = Math.sqrt(b1.vx*b1.vx + b1.vy*b1.vy);
+    let speed2 = Math.sqrt(b2.vx*b2.vx + b2.vy*b2.vy);
 
-  // wall collision
-  if(ball.x < ball.radius || ball.x > canvas.width - ball.radius) {
-    ball.vx *= -1;
+    b1.vx = speed2 * Math.cos(angle);
+    b1.vy = speed2 * Math.sin(angle);
+
+    b2.vx = speed1 * Math.cos(angle+Math.PI);
+    b2.vy = speed1 * Math.sin(angle+Math.PI);
   }
-  if(ball.y < ball.radius || ball.y > canvas.height - ball.radius) {
-    ball.vy *= -1;
-  }
-
-  // pocket detection
-  pockets.forEach(p => {
-    let dx = ball.x - p.x;
-    let dy = ball.y - p.y;
-    let dist = Math.sqrt(dx*dx + dy*dy);
-
-    if(dist < 12) {
-      // reset ball
-      ball.x = 150;
-      ball.y = 150;
-      ball.vx = 0;
-      ball.vy = 0;
-    }
-  });
 }
 
-function drawAimLine() {
-  if(aiming) {
+function update(){
+  let moving = false;
+
+  balls.forEach(b=>{
+    b.x += b.vx;
+    b.y += b.vy;
+
+    b.vx *= 0.98;
+    b.vy *= 0.98;
+
+    if(Math.abs(b.vx)>0.1 || Math.abs(b.vy)>0.1){
+      moving = true;
+    }
+
+    // walls
+    if(b.x<radius || b.x>canvas.width-radius) b.vx*=-1;
+    if(b.y<radius || b.y>canvas.height-radius) b.vy*=-1;
+  });
+
+  // collisions
+  for(let i=0;i<balls.length;i++){
+    for(let j=i+1;j<balls.length;j++){
+      collide(balls[i],balls[j]);
+    }
+  }
+
+  // pockets
+  balls = balls.filter(b=>{
+    for(let p of pockets){
+      let dx = b.x - p.x;
+      let dy = b.y - p.y;
+      if(Math.sqrt(dx*dx+dy*dy) < 14){
+        if(b.color==="black"){
+          document.getElementById("turn").innerText =
+            "Player " + playerTurn + " loses! 8-ball pocketed!";
+          gameOver = true;
+        }
+        if(b.type==="cue"){
+          b.x = 150; b.y = 175;
+          b.vx = b.vy = 0;
+          return true;
+        }
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // switch turn when stopped
+  if(!moving && !aiming && !gameOver){
+    playerTurn = playerTurn === 1 ? 2 : 1;
+    document.getElementById("turn").innerText =
+      "Player " + playerTurn + " Turn";
+  }
+}
+
+function drawAim(){
+  if(aiming){
+    let cue = balls.find(b=>b.type==="cue");
     ctx.beginPath();
-    ctx.moveTo(ball.x, ball.y);
+    ctx.moveTo(cue.x, cue.y);
     ctx.lineTo(startX, startY);
-    ctx.strokeStyle = "white";
+    ctx.strokeStyle="white";
     ctx.stroke();
   }
 }
 
-function gameLoop() {
+function loop(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-
   drawPockets();
-  drawBall();
-  drawAimLine();
-
+  balls.forEach(drawBall);
+  drawAim();
   update();
-
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(loop);
 }
 
-gameLoop();
+loop();
 </script>
 
 </body>
