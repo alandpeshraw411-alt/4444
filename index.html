@@ -25,25 +25,25 @@
       text-decoration: none;
     }
 
-    /* Hero Section */
+    /* Hero Section with Image */
     .hero {
-      background: linear-gradient(to right, #007BFF, #00C6FF);
+      background: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085') no-repeat center;
+      background-size: cover;
       color: white;
       text-align: center;
-      padding: 60px 20px;
+      padding: 100px 20px;
     }
 
     .hero h1 {
-      margin-bottom: 10px;
+      background: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 10px;
     }
 
-    .hero button {
-      padding: 10px 20px;
-      border: none;
-      background: white;
-      color: #007BFF;
-      border-radius: 5px;
-      cursor: pointer;
+    .hero p {
+      background: rgba(0,0,0,0.6);
+      display: inline-block;
+      padding: 10px;
     }
 
     /* Services */
@@ -57,12 +57,22 @@
 
     .card {
       background: white;
-      padding: 20px;
-      width: 200px;
-      text-align: center;
+      width: 250px;
       border-radius: 10px;
+      overflow: hidden;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
       transition: 0.3s;
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .card-content {
+      padding: 15px;
+      text-align: center;
     }
 
     .card:hover {
@@ -75,7 +85,6 @@
       padding: 20px;
       background: black;
       color: white;
-      margin-top: 40px;
     }
   </style>
 </head>
@@ -95,26 +104,36 @@
   <!-- Hero Section -->
   <div class="hero">
     <h1>Welcome to NovaTech</h1>
-    <p>We create modern, fast, and beautiful websites</p>
-    <button>Get Started</button>
+    <p>We build modern websites</p>
   </div>
 
   <!-- Services -->
   <div class="services">
+
     <div class="card">
-      <h3>Web Design</h3>
-      <p>Clean and modern UI design</p>
+      <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a">
+      <div class="card-content">
+        <h3>Web Design</h3>
+        <p>Beautiful and modern layouts</p>
+      </div>
     </div>
 
     <div class="card">
-      <h3>Development</h3>
-      <p>Fast and secure websites</p>
+      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475">
+      <div class="card-content">
+        <h3>Development</h3>
+        <p>Fast and secure websites</p>
+      </div>
     </div>
 
     <div class="card">
-      <h3>Support</h3>
-      <p>24/7 customer help</p>
+      <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216">
+      <div class="card-content">
+        <h3>Support</h3>
+        <p>24/7 customer support</p>
+      </div>
     </div>
+
   </div>
 
   <!-- Footer -->
