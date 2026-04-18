@@ -2,17 +2,29 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>8 Ball Pool Advanced</title>
+<title>8 Ball Pool FINAL</title>
 <style>
 body {
   margin:0;
   background:#0b3d2e;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  font-family:sans-serif;
+  text-align:center;
+  color:white;
+}
+#ui {
+  padding:10px;
+}
+button {
+  padding:10px 20px;
+  margin:5px;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
 }
 canvas {
+  display:block;
+  margin:auto;
   background:#1e7a5b;
   border:10px solid #5b3a1e;
   border-radius:10px;
@@ -20,120 +32,134 @@ canvas {
 </style>
 </head>
 <body>
+
+<div id="ui">
+  <div id="turn"></div>
+  <div id="score"></div>
+  <div id="info"></div>
+  <button onclick="restart()">Restart</button>
+</div>
+
 <canvas id="game" width="900" height="450"></canvas>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-const RADIUS = 10;
-const FRICTION = 0.985;
+const R=10, FRICTION=0.985;
 
-let balls = [];
-let cueBall;
-let dragging = false;
-let aimX=0, aimY=0, power=0;
+let balls=[], cueBall;
+let dragging=false, aimX=0, aimY=0, power=0;
+let currentPlayer=1;
+let scores={1:0,2:0};
+let shotInProgress=false;
+let gameOver=false;
 
-// spin
-let spinX = 0;
-let spinY = 0;
+const turnText=document.getElementById("turn");
+const scoreText=document.getElementById("score");
+const infoText=document.getElementById("info");
 
-// pockets
-const pockets = [
+const pockets=[
   {x:0,y:0},{x:450,y:0},{x:900,y:0},
   {x:0,y:450},{x:450,y:450},{x:900,y:450}
 ];
 
+function restart(){
+  init();
+  scores={1:0,2:0};
+  currentPlayer=1;
+  gameOver=false;
+  updateUI();
+}
+
 function init(){
   balls=[];
-  cueBall={x:200,y:225,vx:0,vy:0,spinX:0,spinY:0,color:"white",alive:true};
+  cueBall={x:200,y:225,vx:0,vy:0,color:"white",alive:true};
   balls.push(cueBall);
 
-  let startX=600, startY=225;
-  for(let row=0; row<5; row++){
-    for(let i=0;i<=row;i++){
+  let sx=600, sy=225;
+  for(let r=0;r<5;r++){
+    for(let i=0;i<=r;i++){
       balls.push({
-        x:startX+row*22,
-        y:startY-row*11+i*22,
+        x:sx+r*22,
+        y:sy-r*11+i*22,
         vx:0,vy:0,
-        spinX:0,spinY:0,
-        color:"orange",
+        color:(i%2===0?"orange":"blue"),
         alive:true
       });
     }
   }
 }
+
 init();
 
-// mouse
-canvas.addEventListener("mousedown", e=>{
-  if(!allStopped()) return;
+function getPos(e){
+  if(e.touches) return {
+    x:e.touches[0].clientX-canvas.offsetLeft,
+    y:e.touches[0].clientY-canvas.offsetTop
+  };
+  return {x:e.offsetX,y:e.offsetY};
+}
 
-  let dx = e.offsetX - cueBall.x;
-  let dy = e.offsetY - cueBall.y;
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("touchstart", start);
 
-  // click on ball = set spin
-  if(Math.sqrt(dx*dx+dy*dy) < 20){
-    spinX = dx * 0.05;
-    spinY = dy * 0.05;
-    return;
-  }
-
+function start(e){
+  if(!allStopped()||gameOver) return;
+  let pos=getPos(e);
   dragging=true;
-  aimX=e.offsetX;
-  aimY=e.offsetY;
-});
+  aimX=pos.x;
+  aimY=pos.y;
+}
 
-canvas.addEventListener("mousemove", e=>{
+canvas.addEventListener("mousemove", move);
+canvas.addEventListener("touchmove", move);
+
+function move(e){
   if(dragging){
-    aimX=e.offsetX;
-    aimY=e.offsetY;
+    let pos=getPos(e);
+    aimX=pos.x;
+    aimY=pos.y;
     let dx=cueBall.x-aimX;
     let dy=cueBall.y-aimY;
-    power=Math.min(Math.sqrt(dx*dx+dy*dy),120);
+    power=Math.min(Math.hypot(dx,dy),130);
   }
-});
+}
 
-canvas.addEventListener("mouseup", e=>{
+canvas.addEventListener("mouseup", shoot);
+canvas.addEventListener("touchend", shoot);
+
+function shoot(){
   if(dragging){
     let dx=cueBall.x-aimX;
     let dy=cueBall.y-aimY;
-    let angle=Math.atan2(dy,dx);
+    let ang=Math.atan2(dy,dx);
 
-    cueBall.vx=Math.cos(angle)*power*0.2;
-    cueBall.vy=Math.sin(angle)*power*0.2;
-
-    cueBall.spinX = spinX;
-    cueBall.spinY = spinY;
-
-    spinX=0;
-    spinY=0;
+    cueBall.vx=Math.cos(ang)*power*0.22;
+    cueBall.vy=Math.sin(ang)*power*0.22;
 
     dragging=false;
     power=0;
+    shotInProgress=true;
   }
-});
-
-function allStopped(){
-  return balls.every(b=>Math.abs(b.vx)<0.1 && Math.abs(b.vy)<0.1);
 }
 
-// physics
-function resolveCollision(b1,b2){
-  const dx=b2.x-b1.x;
-  const dy=b2.y-b1.y;
-  const dist=Math.sqrt(dx*dx+dy*dy);
+function allStopped(){
+  return balls.every(b=>Math.abs(b.vx)<0.1&&Math.abs(b.vy)<0.1);
+}
+
+function collide(b1,b2){
+  let dx=b2.x-b1.x, dy=b2.y-b1.y;
+  let dist=Math.hypot(dx,dy);
   if(dist===0) return;
 
-  const nx=dx/dist;
-  const ny=dy/dist;
+  let nx=dx/dist, ny=dy/dist;
+  let p=2*(b1.vx*nx+b1.vy*ny - b2.vx*nx - b2.vy*ny)/2;
 
-  const p = 2*(b1.vx*nx+b1.vy*ny - b2.vx*nx - b2.vy*ny)/2;
-
-  b1.vx -= p*nx;
-  b1.vy -= p*ny;
-  b2.vx += p*nx;
-  b2.vy += p*ny;
+  b1.vx-=p*nx;
+  b1.vy-=p*ny;
+  b2.vx+=p*nx;
+  b2.vy+=p*ny;
 }
 
 function update(){
@@ -142,63 +168,52 @@ function update(){
 
     b.x+=b.vx;
     b.y+=b.vy;
-
-    // spin effect
-    b.vx += b.spinX * 0.01;
-    b.vy += b.spinY * 0.01;
-
-    b.spinX *= 0.98;
-    b.spinY *= 0.98;
-
     b.vx*=FRICTION;
     b.vy*=FRICTION;
 
-    // cushions
-    if(b.x<RADIUS || b.x>canvas.width-RADIUS){
-      b.vx*=-1;
-      b.spinX*=-0.5;
-    }
-    if(b.y<RADIUS || b.y>canvas.height-RADIUS){
-      b.vy*=-1;
-      b.spinY*=-0.5;
-    }
+    if(b.x<R||b.x>canvas.width-R) b.vx*=-1;
+    if(b.y<R||b.y>canvas.height-R) b.vy*=-1;
 
-    // pockets
     pockets.forEach(p=>{
-      let dx=b.x-p.x, dy=b.y-p.y;
-      if(Math.sqrt(dx*dx+dy*dy)<20){
+      if(Math.hypot(b.x-p.x,b.y-p.y)<20){
         if(b===cueBall){
+          infoText.innerText="Foul!";
+          currentPlayer=currentPlayer===1?2:1;
           b.x=200; b.y=225;
           b.vx=b.vy=0;
         } else {
           b.alive=false;
+          scores[currentPlayer]++;
+          if(scores[currentPlayer]>=7){
+            gameOver=true;
+            infoText.innerText="Player "+currentPlayer+" Wins!";
+          }
         }
       }
     });
   });
 
-  // collisions
   for(let i=0;i<balls.length;i++){
     for(let j=i+1;j<balls.length;j++){
       let b1=balls[i], b2=balls[j];
       if(!b1.alive||!b2.alive) continue;
-
-      let dx=b2.x-b1.x;
-      let dy=b2.y-b1.y;
-      let dist=Math.sqrt(dx*dx+dy*dy);
-
-      if(dist<2*RADIUS){
-        resolveCollision(b1,b2);
+      if(Math.hypot(b1.x-b2.x,b1.y-b2.y)<2*R){
+        collide(b1,b2);
       }
     }
   }
+
+  if(shotInProgress && allStopped()){
+    currentPlayer=currentPlayer===1?2:1;
+    shotInProgress=false;
+  }
+
+  updateUI();
 }
 
-// draw
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  // pockets
   ctx.fillStyle="black";
   pockets.forEach(p=>{
     ctx.beginPath();
@@ -206,51 +221,39 @@ function draw(){
     ctx.fill();
   });
 
-  // balls
   balls.forEach(b=>{
     if(!b.alive) return;
+
+    ctx.fillStyle="rgba(0,0,0,0.3)";
+    ctx.beginPath();
+    ctx.arc(b.x+3,b.y+3,R,0,Math.PI*2);
+    ctx.fill();
+
     ctx.fillStyle=b.color;
     ctx.beginPath();
-    ctx.arc(b.x,b.y,RADIUS,0,Math.PI*2);
+    ctx.arc(b.x,b.y,R,0,Math.PI*2);
     ctx.fill();
   });
 
-  // spin indicator
-  ctx.fillStyle="red";
-  ctx.beginPath();
-  ctx.arc(cueBall.x + spinX*10, cueBall.y + spinY*10, 3, 0, Math.PI*2);
-  ctx.fill();
-
-  // aim + cue
   if(dragging){
     let dx=cueBall.x-aimX;
     let dy=cueBall.y-aimY;
-    let angle=Math.atan2(dy,dx);
+    let ang=Math.atan2(dy,dx);
 
-    // aim line
-    ctx.strokeStyle="rgba(255,255,255,0.5)";
+    ctx.strokeStyle="white";
     ctx.beginPath();
     ctx.moveTo(cueBall.x,cueBall.y);
     ctx.lineTo(
-      cueBall.x+Math.cos(angle)*300,
-      cueBall.y+Math.sin(angle)*300
-    );
-    ctx.stroke();
-
-    // cue stick
-    ctx.strokeStyle="#c69c6d";
-    ctx.lineWidth=6;
-    ctx.beginPath();
-    ctx.moveTo(
-      cueBall.x-Math.cos(angle)*(power+40),
-      cueBall.y-Math.sin(angle)*(power+40)
-    );
-    ctx.lineTo(
-      cueBall.x-Math.cos(angle)*10,
-      cueBall.y-Math.sin(angle)*10
+      cueBall.x+Math.cos(ang)*400,
+      cueBall.y+Math.sin(ang)*400
     );
     ctx.stroke();
   }
+}
+
+function updateUI(){
+  turnText.innerText="Turn: Player "+currentPlayer;
+  scoreText.innerText=`P1: ${scores[1]} | P2: ${scores[2]}`;
 }
 
 function loop(){
@@ -259,6 +262,7 @@ function loop(){
   requestAnimationFrame(loop);
 }
 loop();
+updateUI();
 </script>
 </body>
 </html>
