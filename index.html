@@ -2,10 +2,21 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>8 Ball Pool (Browser)</title>
+<title>8 Ball Pool Advanced</title>
 <style>
-  body { margin:0; background:#0b3d2e; display:flex; justify-content:center; align-items:center; height:100vh; }
-  canvas { background:#1e7a5b; border:10px solid #5b3a1e; border-radius:10px; }
+body {
+  margin:0;
+  background:#0b3d2e;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+canvas {
+  background:#1e7a5b;
+  border:10px solid #5b3a1e;
+  border-radius:10px;
+}
 </style>
 </head>
 <body>
@@ -15,14 +26,17 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const FRICTION = 0.99;
 const RADIUS = 10;
+const FRICTION = 0.985;
 
 let balls = [];
 let cueBall;
 let dragging = false;
-let aimX = 0, aimY = 0;
-let power = 0;
+let aimX=0, aimY=0, power=0;
+
+// spin
+let spinX = 0;
+let spinY = 0;
 
 // pockets
 const pockets = [
@@ -30,53 +44,70 @@ const pockets = [
   {x:0,y:450},{x:450,y:450},{x:900,y:450}
 ];
 
-// create balls
-function initBalls(){
-  balls = [];
-  cueBall = {x:200,y:225,vx:0,vy:0,color:"white",alive:true};
+function init(){
+  balls=[];
+  cueBall={x:200,y:225,vx:0,vy:0,spinX:0,spinY:0,color:"white",alive:true};
   balls.push(cueBall);
 
-  // triangle rack
-  let startX = 600, startY = 225;
-  let count = 1;
+  let startX=600, startY=225;
   for(let row=0; row<5; row++){
     for(let i=0;i<=row;i++){
       balls.push({
-        x: startX + row*22,
-        y: startY - row*11 + i*22,
+        x:startX+row*22,
+        y:startY-row*11+i*22,
         vx:0,vy:0,
+        spinX:0,spinY:0,
         color:"orange",
         alive:true
       });
     }
   }
 }
-initBalls();
+init();
 
 // mouse
 canvas.addEventListener("mousedown", e=>{
   if(!allStopped()) return;
-  dragging = true;
-  aimX = e.offsetX;
-  aimY = e.offsetY;
+
+  let dx = e.offsetX - cueBall.x;
+  let dy = e.offsetY - cueBall.y;
+
+  // click on ball = set spin
+  if(Math.sqrt(dx*dx+dy*dy) < 20){
+    spinX = dx * 0.05;
+    spinY = dy * 0.05;
+    return;
+  }
+
+  dragging=true;
+  aimX=e.offsetX;
+  aimY=e.offsetY;
 });
+
 canvas.addEventListener("mousemove", e=>{
   if(dragging){
-    aimX = e.offsetX;
-    aimY = e.offsetY;
-    let dx = cueBall.x - aimX;
-    let dy = cueBall.y - aimY;
-    power = Math.min(Math.sqrt(dx*dx+dy*dy),120);
+    aimX=e.offsetX;
+    aimY=e.offsetY;
+    let dx=cueBall.x-aimX;
+    let dy=cueBall.y-aimY;
+    power=Math.min(Math.sqrt(dx*dx+dy*dy),120);
   }
 });
+
 canvas.addEventListener("mouseup", e=>{
   if(dragging){
-    let dx = cueBall.x - aimX;
-    let dy = cueBall.y - aimY;
-    let angle = Math.atan2(dy,dx);
+    let dx=cueBall.x-aimX;
+    let dy=cueBall.y-aimY;
+    let angle=Math.atan2(dy,dx);
 
-    cueBall.vx = Math.cos(angle)*power*0.15;
-    cueBall.vy = Math.sin(angle)*power*0.15;
+    cueBall.vx=Math.cos(angle)*power*0.2;
+    cueBall.vy=Math.sin(angle)*power*0.2;
+
+    cueBall.spinX = spinX;
+    cueBall.spinY = spinY;
+
+    spinX=0;
+    spinY=0;
 
     dragging=false;
     power=0;
@@ -88,27 +119,57 @@ function allStopped(){
 }
 
 // physics
+function resolveCollision(b1,b2){
+  const dx=b2.x-b1.x;
+  const dy=b2.y-b1.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist===0) return;
+
+  const nx=dx/dist;
+  const ny=dy/dist;
+
+  const p = 2*(b1.vx*nx+b1.vy*ny - b2.vx*nx - b2.vy*ny)/2;
+
+  b1.vx -= p*nx;
+  b1.vy -= p*ny;
+  b2.vx += p*nx;
+  b2.vy += p*ny;
+}
+
 function update(){
   balls.forEach(b=>{
     if(!b.alive) return;
 
-    b.x += b.vx;
-    b.y += b.vy;
+    b.x+=b.vx;
+    b.y+=b.vy;
 
-    b.vx *= FRICTION;
-    b.vy *= FRICTION;
+    // spin effect
+    b.vx += b.spinX * 0.01;
+    b.vy += b.spinY * 0.01;
 
-    // walls
-    if(b.x < RADIUS || b.x > canvas.width-RADIUS) b.vx *= -1;
-    if(b.y < RADIUS || b.y > canvas.height-RADIUS) b.vy *= -1;
+    b.spinX *= 0.98;
+    b.spinY *= 0.98;
+
+    b.vx*=FRICTION;
+    b.vy*=FRICTION;
+
+    // cushions
+    if(b.x<RADIUS || b.x>canvas.width-RADIUS){
+      b.vx*=-1;
+      b.spinX*=-0.5;
+    }
+    if(b.y<RADIUS || b.y>canvas.height-RADIUS){
+      b.vy*=-1;
+      b.spinY*=-0.5;
+    }
 
     // pockets
     pockets.forEach(p=>{
       let dx=b.x-p.x, dy=b.y-p.y;
       if(Math.sqrt(dx*dx+dy*dy)<20){
         if(b===cueBall){
-          // reset cue ball
-          b.x=200; b.y=225; b.vx=0; b.vy=0;
+          b.x=200; b.y=225;
+          b.vx=b.vy=0;
         } else {
           b.alive=false;
         }
@@ -120,23 +181,14 @@ function update(){
   for(let i=0;i<balls.length;i++){
     for(let j=i+1;j<balls.length;j++){
       let b1=balls[i], b2=balls[j];
-      if(!b1.alive || !b2.alive) continue;
+      if(!b1.alive||!b2.alive) continue;
 
-      let dx=b2.x-b1.x, dy=b2.y-b1.y;
+      let dx=b2.x-b1.x;
+      let dy=b2.y-b1.y;
       let dist=Math.sqrt(dx*dx+dy*dy);
+
       if(dist<2*RADIUS){
-        let angle=Math.atan2(dy,dx);
-
-        let vx1=b1.vx, vy1=b1.vy;
-        b1.vx=b2.vx; b1.vy=b2.vy;
-        b2.vx=vx1; b2.vy=vy1;
-
-        // separate balls
-        let overlap=2*RADIUS-dist;
-        b1.x -= Math.cos(angle)*overlap/2;
-        b1.y -= Math.sin(angle)*overlap/2;
-        b2.x += Math.cos(angle)*overlap/2;
-        b2.y += Math.sin(angle)*overlap/2;
+        resolveCollision(b1,b2);
       }
     }
   }
@@ -163,12 +215,40 @@ function draw(){
     ctx.fill();
   });
 
-  // aim line
+  // spin indicator
+  ctx.fillStyle="red";
+  ctx.beginPath();
+  ctx.arc(cueBall.x + spinX*10, cueBall.y + spinY*10, 3, 0, Math.PI*2);
+  ctx.fill();
+
+  // aim + cue
   if(dragging){
-    ctx.strokeStyle="white";
+    let dx=cueBall.x-aimX;
+    let dy=cueBall.y-aimY;
+    let angle=Math.atan2(dy,dx);
+
+    // aim line
+    ctx.strokeStyle="rgba(255,255,255,0.5)";
     ctx.beginPath();
     ctx.moveTo(cueBall.x,cueBall.y);
-    ctx.lineTo(aimX,aimY);
+    ctx.lineTo(
+      cueBall.x+Math.cos(angle)*300,
+      cueBall.y+Math.sin(angle)*300
+    );
+    ctx.stroke();
+
+    // cue stick
+    ctx.strokeStyle="#c69c6d";
+    ctx.lineWidth=6;
+    ctx.beginPath();
+    ctx.moveTo(
+      cueBall.x-Math.cos(angle)*(power+40),
+      cueBall.y-Math.sin(angle)*(power+40)
+    );
+    ctx.lineTo(
+      cueBall.x-Math.cos(angle)*10,
+      cueBall.y-Math.sin(angle)*10
+    );
     ctx.stroke();
   }
 }
